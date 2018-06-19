@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Created-By: Apache Maven 3.5.0
+Built-By: joakim
+Build-Jdk: 9.0.4
+Bundle-ManifestVersion: 2
+Bundle-Name: Jetty :: Start
+Bundle-SymbolicName: org.eclipse.jetty.start.source
+Bundle-Vendor: Eclipse.org - Jetty
+Bundle-Version: 9.4.11.v20180605
+Implementation-Vendor: Eclipse.org - Jetty
+Implementation-Version: 9.4.11.v20180605
+Eclipse-SourceBundle: org.eclipse.jetty.start;version="9.4.11.v2018060
+ 5";roots:="."

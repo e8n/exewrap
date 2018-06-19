@@ -1,0 +1,73 @@
+apply plugin: 'java'
+
+archivesBaseName = 'jetty'
+version = '9.4.11'
+
+def defaultEncoding = 'UTF-8'
+tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
+tasks.withType(GroovyCompile).each { it.groovyOptions.encoding = defaultEncoding }
+
+repositories {
+	jcenter { url "http://jcenter.bintray.com" }
+}
+
+dependencies {
+	compile fileTree(dir: 'lib', include: ['**/*.jar'], excludes: ['**/*-sources.jar', '**/*-javadoc.jar'])
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDirs "src/main/resources", "src/main/java"
+		}
+	}
+}
+
+jar {
+	archiveName = "${archivesBaseName}.jar"
+	manifest {
+		attributes "Main-Class" : "exewrap.jetty.Main"
+		from "src/main/resources/META-INF/MANIFEST.MF"
+	}
+	include "exewrap/**", "org/**"
+}
+
+defaultTasks 'clean', 'exewrap_x86', 'exewrap_x64'
+
+task exewrap_x86(type: Exec, dependsOn: 'jar') {
+	setGroup("build")
+	setDescription('Assembles the executable.')
+	executable "${projectDir}/exewrap.exe"
+	args "-A", "x86",
+		"-s",
+		"-t", "1.8",
+		"-L", "lib/ext;resources",
+		"-b", "-agentlib:jdwp=transport=dt_socket,address=localhost:8000,server=y,suspend=n,quiet=y",
+		"-e", "NOLOG;NOHELP",
+		"-j", "${libsDir}/${archivesBaseName}.jar",
+		"-o", "${buildDir}/x86/${archivesBaseName}.exe",
+		"-i", "src/main/resources/images/jetty.ico",
+		"-d", "Jetty Windows Service",
+		"-p", "jetty",
+		"-V", "${version}",
+		"-v", "${version}"
+}
+
+task exewrap_x64(type: Exec, dependsOn: 'jar') {
+	setGroup("build")
+	setDescription('Assembles the executable.')
+	executable "${projectDir}/exewrap.exe"
+	args "-A", "x64",
+		"-s",
+		"-t", "1.8",
+		"-L", "lib/ext;resources",
+		"-b", "-agentlib:jdwp=transport=dt_socket,address=localhost:8000,server=y,suspend=n,quiet=y",
+		"-e", "NOLOG;NOHELP",
+		"-j", "${libsDir}/${archivesBaseName}.jar",
+		"-o", "${buildDir}/x64/${archivesBaseName}.exe",
+		"-i", "src/main/resources/images/jetty.ico",
+		"-d", "Jetty Windows Service",
+		"-p", "jetty",
+		"-V", "${version}",
+		"-v", "${version}"
+}
