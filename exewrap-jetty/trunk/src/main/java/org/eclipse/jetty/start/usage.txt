@@ -21,7 +21,7 @@ Command Line Options:
                      o  Server Classpath
                      o  Server XML Configuration
 
-  --dry-run        Print the command line that the jetty.exe generates,
+  --dry-run        Print the command line that the start.jar generates,
                    then exit. This may be used to generate command lines
                    when the start.ini includes -X or -D arguments.
 
@@ -195,7 +195,6 @@ Properties:
     maven.repo.uri=[url] default https://repo1.maven.org/maven2/.
       The url to use to download Maven dependencies.
 
-
 Service Options:
 ----------------
 
@@ -218,8 +217,7 @@ Service Options:
   
     remove-options:
       -s                 stop service.
-      
-      
+
 Defaults:
 ---------
 

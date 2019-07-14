@@ -18,6 +18,9 @@
 
 package org.eclipse.jetty.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Java Version Utility class.
  * <p>Parses java versions to extract a consistent set of version parts</p>

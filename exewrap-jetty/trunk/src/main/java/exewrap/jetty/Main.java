@@ -11,6 +11,12 @@ import org.eclipse.jetty.start.StartArgs;
 
 /** http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
  * 
+ * 2018-12-26 追記
+ * 9.4.14 では jetty-start-9.4.14.v20181114-sources.jar と jetty-start-9.4.14.v20181114-shaded-sources.jar があった。
+ * shared-sources.jar のほうは依存クラスも一緒に入っている模様。こちらのほうがよいか。
+ * org/eclipse/jetty/start/shared/util を org/eclipse/jetty/util に移動させる。
+ * 
+ * 
  * modified: org/eclipse/jetty/start/Main.java
  * 
  * (1) usageExit method: java -jar $JETTY_HOME/start.jar  ==>  jetty.exe

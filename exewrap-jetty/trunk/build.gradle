@@ -1,7 +1,8 @@
+apply plugin: 'eclipse'
 apply plugin: 'java'
 
 archivesBaseName = 'jetty'
-version = '9.4.11'
+version = '9.4.14'
 
 def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
@@ -15,6 +16,7 @@ dependencies {
 	compile fileTree(dir: 'lib', include: ['**/*.jar'], excludes: ['**/*-sources.jar', '**/*-javadoc.jar'])
 }
 
+/*
 sourceSets {
 	main {
 		resources {
@@ -22,6 +24,7 @@ sourceSets {
 		}
 	}
 }
+*/
 
 jar {
 	archiveName = "${archivesBaseName}.jar"
@@ -41,7 +44,7 @@ task exewrap_x86(type: Exec, dependsOn: 'jar') {
 	args "-A", "x86",
 		"-s",
 		"-t", "1.8",
-		"-L", "lib/ext;resources",
+		"-L", "lib;lib/ext;resources",
 		"-b", "-agentlib:jdwp=transport=dt_socket,address=localhost:8000,server=y,suspend=n,quiet=y",
 		"-e", "NOLOG;NOHELP",
 		"-j", "${libsDir}/${archivesBaseName}.jar",
@@ -60,7 +63,7 @@ task exewrap_x64(type: Exec, dependsOn: 'jar') {
 	args "-A", "x64",
 		"-s",
 		"-t", "1.8",
-		"-L", "lib/ext;resources",
+		"-L", "lib;lib/ext;resources",
 		"-b", "-agentlib:jdwp=transport=dt_socket,address=localhost:8000,server=y,suspend=n,quiet=y",
 		"-e", "NOLOG;NOHELP",
 		"-j", "${libsDir}/${archivesBaseName}.jar",
