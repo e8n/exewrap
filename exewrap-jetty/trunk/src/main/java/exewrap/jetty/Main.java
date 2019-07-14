@@ -1,13 +1,12 @@
 package exewrap.jetty;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.UUID;
-
-import org.eclipse.jetty.start.StartArgs;
 
 /** http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
  * 
@@ -21,6 +20,9 @@ import org.eclipse.jetty.start.StartArgs;
  * 
  * (1) usageExit method: java -jar $JETTY_HOME/start.jar  ==>  jetty.exe
  * 
+ * (2) public static void main(String[] args) の戻り値を boolean に変更して、
+ *     main.start(startArgs) の次行に return startArgs.isRun(); を追加する。
+ *     メソッドの末尾には return false; を追加する。
  * 
  * modified: src/main/resources/org/eclipse/jetty/start/usage.txt
  * 
@@ -75,11 +77,13 @@ public class Main {
 	private static String stopKey;
 	private static Object stopMonitor;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		args = prepare(args);
 		org.eclipse.jetty.start.Main.main(args);
 	}
 	
 	public static void start(String[] args) throws IOException, Exception {
+		args = prepare(args);
 		stopPort = String.valueOf(getStopPort());
 		stopKey = UUID.randomUUID().toString();
 		stopMonitor = new Object();
@@ -87,21 +91,20 @@ public class Main {
 		System.setProperty("STOP.PORT", stopPort);
 		System.setProperty("STOP.KEY", stopKey);
 		
-		org.eclipse.jetty.start.Main.main(args);
-		
-		StartArgs startArgs = new org.eclipse.jetty.start.Main().processCommandLine(args);
-		if(startArgs.isRun()) {
+		boolean isRun = org.eclipse.jetty.start.Main.main(args);
+		if(isRun) {
 			synchronized(stopMonitor) {
 				stopMonitor.wait();
 			}
 		}
 	}
 	
-	public static void stop() {
+	public static void stop() throws IOException {
+		String[] args = prepare(new String[] { "--stop" });
 		System.setProperty("STOP.PORT", stopPort);
 		System.setProperty("STOP.KEY", stopKey);
 		
-		org.eclipse.jetty.start.Main.main(new String[] { "--stop" });
+		org.eclipse.jetty.start.Main.main(args);
 		
 		synchronized(stopMonitor) {
 			stopMonitor.notifyAll();
@@ -132,5 +135,35 @@ public class Main {
 		}
 		return port;
 	}
-	
+
+	private static String[] prepare(String[] args) throws IOException {
+		String jettyHome = null;
+		String jettyBase = null;
+		
+		for(int i = 0; i < args.length; i++) {
+			String s = args[i].toLowerCase();
+			if(s.length() > 11 && s.startsWith("jetty.home=")) {
+				jettyHome = new File(args[i].substring(11)).getCanonicalPath();
+				args[i] = "jetty.home=" + jettyHome;
+			}
+			if(s.length() > 11 && s.startsWith("jetty.base=")) {
+				jettyBase = new File(args[i].substring(11)).getCanonicalPath();
+				args[i] = "jetty.base=" + jettyBase;
+			}
+		}
+		
+		if(jettyBase != null) {
+			System.setProperty("user.dir", jettyBase);
+		}
+		
+		if(jettyHome == null) {
+			String[] newArgs = new String[args.length + 1];
+			newArgs[0] = "jetty.home=" + System.getProperty("java.application.path");
+			for(int i = 0; i < args.length; i++) {
+				newArgs[i + 1] = args[i];
+			}
+			return newArgs;
+		}
+		return args;
+	}
 }

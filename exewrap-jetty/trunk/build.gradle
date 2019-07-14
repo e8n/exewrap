@@ -2,7 +2,7 @@ apply plugin: 'eclipse'
 apply plugin: 'java'
 
 archivesBaseName = 'jetty'
-version = '9.4.14'
+version = '9.4.19'
 
 def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
@@ -13,7 +13,9 @@ repositories {
 }
 
 dependencies {
-	compile fileTree(dir: 'lib', include: ['**/*.jar'], excludes: ['**/*-sources.jar', '**/*-javadoc.jar'])
+	compile fileTree(dir: 'lib',
+		includes: ['**/*.jar'],
+		excludes: ['**/*-sources.jar', '**/*-javadoc.jar'])
 }
 
 /*

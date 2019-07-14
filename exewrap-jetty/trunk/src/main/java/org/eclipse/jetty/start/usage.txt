@@ -195,6 +195,7 @@ Properties:
     maven.repo.uri=[url] default https://repo1.maven.org/maven2/.
       The url to use to download Maven dependencies.
 
+
 Service Options:
 ----------------
 
@@ -217,6 +218,7 @@ Service Options:
   
     remove-options:
       -s                 stop service.
+
 
 Defaults:
 ---------

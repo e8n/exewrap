@@ -1,6 +1,6 @@
 //
 //  ========================================================================
-//  Copyright (c) 1995-2018 Mort Bay Consulting Pty. Ltd.
+//  Copyright (c) 1995-2019 Mort Bay Consulting Pty. Ltd.
 //  ------------------------------------------------------------------------
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the Eclipse Public License v1.0
@@ -66,7 +66,7 @@ public class Main
 {
     private static final int EXIT_USAGE = 1;
 
-    public static void main(String[] args)
+    public static boolean main(String[] args)
     {
         boolean test=false;
         try
@@ -75,6 +75,7 @@ public class Main
             StartArgs startArgs = main.processCommandLine(args);
             test=startArgs.isTestingModeEnabled();
             main.start(startArgs);
+            return startArgs.isRun();
         }
         catch (UsageException e)
         {
@@ -85,6 +86,7 @@ public class Main
         {
             usageExit(e,UsageException.ERR_UNKNOWN,test);
         }
+        return false;
     }
 
     static void usageExit(int exit)
@@ -192,7 +194,6 @@ public class Main
     {
         Class<?> invoked_class = null;
         String mainclass = args.getMainClassname();
-        System.out.println("mainclass=" + mainclass);
 
         try
         {
@@ -200,8 +201,6 @@ public class Main
         }
         catch (ClassNotFoundException e)
         {
-        	e.printStackTrace();
-        	
             StartLog.error("Nothing to start, exiting ...");
             StartLog.debug(e);
             usageExit(ERR_INVOKE_MAIN);
