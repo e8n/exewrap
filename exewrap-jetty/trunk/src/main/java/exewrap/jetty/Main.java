@@ -67,6 +67,13 @@ Service Options:
  * Implementation-Vendor: Eclipse Jetty Project
  * Implementation-Version: 9.4.20.v20190813
  * 
+ * (7) demo-base/etc/test-realm.xml の修正
+ * etc/test-realm.xmlはjetty.baseからの相対パスとして解決されるべきだが、
+ * カレントディレクトリ(user.dir)からの相対パスとして解決されてしまうようになっている。
+ *  configを以下のようにしてjetty.baseからの相対パスとして解決されるように修正します。
+ *  
+ *  <Set name="config"><Property name="jetty.base" default="."/>/<Property name="jetty.demo.realm" default="etc/realm.properties"/></Set>
+ * 
  */
 
 public class Main {
