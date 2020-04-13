@@ -1,6 +1,6 @@
 //
 //  ========================================================================
-//  Copyright (c) 1995-2019 Mort Bay Consulting Pty. Ltd.
+//  Copyright (c) 1995-2020 Mort Bay Consulting Pty Ltd and others.
 //  ------------------------------------------------------------------------
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the Eclipse Public License v1.0
@@ -605,11 +605,11 @@ public class Main
         }
         catch (ConnectException e)
         {
-            usageExit(e, ERR_NOT_STOPPED, jsvcStartArgs.isTestingModeEnabled());
+            usageExit(e, ERR_NOT_STOPPED, jsvcStartArgs != null && jsvcStartArgs.isTestingModeEnabled());
         }
         catch (Exception e)
         {
-            usageExit(e, ERR_UNKNOWN, jsvcStartArgs.isTestingModeEnabled());
+            usageExit(e, ERR_UNKNOWN, jsvcStartArgs != null && jsvcStartArgs.isTestingModeEnabled());
         }
     }
 

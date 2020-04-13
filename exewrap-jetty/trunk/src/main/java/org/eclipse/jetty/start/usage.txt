@@ -133,7 +133,6 @@ Module Management:
                    Approve all license questions. Useful for enabling 
                    modules from a script that does not require user interaction.
 
-
 Advanced Commands:
 ------------------
 
@@ -156,7 +155,6 @@ Advanced Commands:
   maven.repo.uri=[url]
                   The url to use to download Maven dependencies.
                   Default is https://repo1.maven.org/maven2/.
-
 
 
 Properties:
@@ -201,22 +199,22 @@ Service Options:
 ----------------
 
   Install service
-  
+
     [install-options] -install [runtime-arguments]
-  
+
     install-options:
       -n <display-name>  set service display name.
       -i                 allow interactive.
-      -m                 
-      -d <dependencies>  
-      -u <username>      
-      -p <password>      
+      -m
+      -d <dependencies>
+      -u <username>
+      -p <password>
       -s                 start service.
-  
+
   Remove service
-  
+
     [remove-options] -remove
-  
+
     remove-options:
       -s                 stop service.
 

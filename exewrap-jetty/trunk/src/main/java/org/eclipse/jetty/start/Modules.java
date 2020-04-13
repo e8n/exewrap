@@ -1,6 +1,6 @@
 //
 //  ========================================================================
-//  Copyright (c) 1995-2019 Mort Bay Consulting Pty. Ltd.
+//  Copyright (c) 1995-2020 Mort Bay Consulting Pty Ltd and others.
 //  ------------------------------------------------------------------------
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the Eclipse Public License v1.0
@@ -20,6 +20,7 @@ package org.eclipse.jetty.start;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,8 +91,8 @@ public class Modules implements Iterable<Module>
         _modules.stream()
             .filter(m ->
             {
-                boolean included = all || m.getTags().stream().anyMatch(t -> include.contains(t));
-                boolean excluded = m.getTags().stream().anyMatch(t -> exclude.contains(t));
+                boolean included = all || m.getTags().stream().anyMatch(include::contains);
+                boolean excluded = m.getTags().stream().anyMatch(exclude::contains);
                 return included && !excluded;
             })
             .sorted()
@@ -132,7 +133,12 @@ public class Modules implements Iterable<Module>
                     label = "     Depend: %s";
                     for (String parent : module.getDepends())
                     {
+                        parent = Module.normalizeModuleName(parent);
                         System.out.printf(label, parent);
+                        if (Module.isConditionalDependency(parent))
+                        {
+                            System.out.print(" [conditional]");
+                        }
                         label = ", %s";
                     }
                     System.out.println();
@@ -213,11 +219,7 @@ public class Modules implements Iterable<Module>
             Module module = new Module(_baseHome, file);
             _modules.add(module);
             _names.put(module.getName(), module);
-            module.getProvides().forEach(n ->
-            {
-                _provided.computeIfAbsent(n, k -> new HashSet<Module>()).add(module);
-            });
-
+            module.getProvides().forEach(n -> _provided.computeIfAbsent(n, k -> new HashSet<>()).add(module));
             return module;
         }
         catch (Error | RuntimeException t)
@@ -252,7 +254,7 @@ public class Modules implements Iterable<Module>
 
     public List<Module> getEnabled()
     {
-        List<Module> enabled = _modules.stream().filter(m -> m.isEnabled()).collect(Collectors.toList());
+        List<Module> enabled = _modules.stream().filter(Module::isEnabled).collect(Collectors.toList());
 
         TopologicalSort<Module> sort = new TopologicalSort<>();
         for (Module module : enabled)
@@ -352,45 +354,59 @@ public class Modules implements Iterable<Module>
 
         // Process module dependencies (always processed as may be dynamic)
         StartLog.debug("Enabled module %s depends on %s", module.getName(), module.getDepends());
-        for (String dependsOn : module.getDepends())
+        for (String dependsOnRaw : module.getDepends())
         {
-            // Look for modules that provide that dependency
-            Set<Module> providers = getAvailableProviders(dependsOn);
+            boolean isConditional = Module.isConditionalDependency(dependsOnRaw);
+            // Final to allow lambda's below to use name
+            final String dependentModule = Module.normalizeModuleName(dependsOnRaw);
 
-            StartLog.debug("Module %s depends on %s provided by %s", module, dependsOn, providers);
+            // Look for modules that provide that dependency
+            Set<Module> providers = getAvailableProviders(dependentModule);
+
+            StartLog.debug("Module %s depends on %s provided by %s", module, dependentModule, providers);
 
             // If there are no known providers of the module
             if (providers.isEmpty())
             {
                 // look for a dynamic module
-                if (dependsOn.contains("/"))
+                if (dependentModule.contains("/"))
                 {
-                    Path file = _baseHome.getPath("modules/" + dependsOn + ".mod");
-                    registerModule(file).expandDependencies(_args.getProperties());
-                    providers = _provided.get(dependsOn);
-                    if (providers == null || providers.isEmpty())
-                        throw new UsageException("Module %s does not provide %s", _baseHome.toShortForm(file), dependsOn);
+                    Path file = _baseHome.getPath("modules/" + dependentModule + ".mod");
+                    if (!isConditional || Files.exists(file))
+                    {
+                        registerModule(file).expandDependencies(_args.getProperties());
+                        providers = _provided.get(dependentModule);
+                        if (providers == null || providers.isEmpty())
+                            throw new UsageException("Module %s does not provide %s", _baseHome.toShortForm(file), dependentModule);
 
-                    enable(newlyEnabled, providers.stream().findFirst().get(), "dynamic dependency of " + module.getName(), true);
+                        enable(newlyEnabled, providers.stream().findFirst().get(), "dynamic dependency of " + module.getName(), true);
+                        continue;
+                    }
+                }
+                // is this a conditional module
+                if (isConditional)
+                {
+                    StartLog.debug("Skipping conditional module [%s]: it does not exist", dependentModule);
                     continue;
                 }
-                throw new UsageException("No module found to provide %s for %s", dependsOn, module);
+                // throw an exception (not a dynamic module and a required dependency)
+                throw new UsageException("No module found to provide %s for %s", dependentModule, module);
             }
 
             // If a provider is already enabled, then add a transitive enable
-            if (providers.stream().filter(Module::isEnabled).count() > 0)
-                providers.stream().filter(m -> m.isEnabled() && !m.equals(module)).forEach(m -> enable(newlyEnabled, m, "transitive provider of " + dependsOn + " for " + module.getName(), true));
+            if (providers.stream().anyMatch(Module::isEnabled))
+                providers.stream().filter(m -> m.isEnabled() && !m.equals(module)).forEach(m -> enable(newlyEnabled, m, "transitive provider of " + dependentModule + " for " + module.getName(), true));
             else
             {
                 // Is there an obvious default?
                 Optional<Module> dftProvider = (providers.size() == 1)
                     ? providers.stream().findFirst()
-                    : providers.stream().filter(m -> m.getName().equals(dependsOn)).findFirst();
+                    : providers.stream().filter(m -> m.getName().equals(dependentModule)).findFirst();
 
                 if (dftProvider.isPresent())
-                    enable(newlyEnabled, dftProvider.get(), "transitive provider of " + dependsOn + " for " + module.getName(), true);
+                    enable(newlyEnabled, dftProvider.get(), "transitive provider of " + dependentModule + " for " + module.getName(), true);
                 else if (StartLog.isDebugEnabled())
-                    StartLog.debug("Module %s requires a %s implementation from one of %s", module, dependsOn, providers);
+                    StartLog.debug("Module %s requires a %s implementation from one of %s", module, dependentModule, providers);
             }
         }
     }
@@ -467,17 +483,19 @@ public class Modules implements Iterable<Module>
         _modules.stream().filter(Module::isEnabled).forEach(m ->
         {
             // Check dependencies
-            m.getDepends().forEach(d ->
-            {
-                Set<Module> providers = getAvailableProviders(d);
-                if (providers.stream().filter(Module::isEnabled).count() == 0)
+            m.getDepends().stream()
+                .filter(depends -> !Module.isConditionalDependency(depends))
+                .forEach(d ->
                 {
-                    if (unsatisfied.length() > 0)
-                        unsatisfied.append(',');
-                    unsatisfied.append(m.getName());
-                    StartLog.error("Module %s requires a module providing %s from one of %s%n", m.getName(), d, providers);
-                }
-            });
+                    Set<Module> providers = getAvailableProviders(d);
+                    if (providers.stream().noneMatch(Module::isEnabled))
+                    {
+                        if (unsatisfied.length() > 0)
+                            unsatisfied.append(',');
+                        unsatisfied.append(m.getName());
+                        StartLog.error("Module %s requires a module providing %s from one of %s%n", m.getName(), d, providers);
+                    }
+                });
         });
 
         if (unsatisfied.length() > 0)

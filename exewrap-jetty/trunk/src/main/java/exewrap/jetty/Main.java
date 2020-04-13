@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
-/** http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
+/** https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
  * 
  * 2018-12-26 追記
  * 9.4.14 では jetty-start-9.4.14.v20181114-sources.jar と jetty-start-9.4.14.v20181114-shaded-sources.jar があった。

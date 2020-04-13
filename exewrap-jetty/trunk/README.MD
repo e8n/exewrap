@@ -1,8 +1,8 @@
 jetty-startのソースコード ダウンロード
-http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
+https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/
 
 たとえば Jetty 9.4.1 の jetty-start の場合…
-http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/9.4.1.v20170120/
+https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-start/9.4.1.v20170120/
 ここから
 jetty-start-9.4.1.v20170120-sources.jar
 をダウンロードします。

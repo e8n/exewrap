@@ -1,6 +1,6 @@
 //
 //  ========================================================================
-//  Copyright (c) 1995-2019 Mort Bay Consulting Pty. Ltd.
+//  Copyright (c) 1995-2020 Mort Bay Consulting Pty Ltd and others.
 //  ------------------------------------------------------------------------
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the Eclipse Public License v1.0
@@ -20,7 +20,6 @@ package org.eclipse.jetty.start;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -154,12 +153,12 @@ public class Module implements Comparable<Module>
     private final List<String> _license = new ArrayList<>();
 
     /**
-     * Dependencies
+     * Dependencies from {@code [depends]} section
      */
     private final List<String> _depends = new ArrayList<>();
 
     /**
-     * Optional
+     * Optional dependencies from {@code [optional]} section are structural in nature.
      */
     private final Set<String> _optional = new HashSet<>();
 
@@ -194,6 +193,18 @@ public class Module implements Comparable<Module>
         _dynamic = _name.contains("/");
 
         process(basehome);
+    }
+
+    public static boolean isConditionalDependency(String depends)
+    {
+        return (depends != null) && (depends.charAt(0) == '?');
+    }
+
+    public static String normalizeModuleName(String name)
+    {
+        if (isConditionalDependency(name))
+            return name.substring(1);
+        return name;
     }
 
     public String getName()
