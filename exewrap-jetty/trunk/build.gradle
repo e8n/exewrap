@@ -1,5 +1,6 @@
 apply plugin: 'java'
 
+archivesBaseName = 'jetty'
 version = '9.4.28'
 
 tasks.withType(JavaCompile) {
@@ -13,9 +14,12 @@ sourceSets.main.resources {
 }
 
 repositories {
+	mavenCentral()
 }
 
 dependencies {
+	implementation "javax.xml.bind:jaxb-api:2.3.1"
+	implementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
 }
 
 def defaultEncoding = 'UTF-8'
@@ -30,6 +34,18 @@ jar {
 		from "src/main/resources/META-INF/MANIFEST.MF"
 	}
 	include "exewrap/**", "org/**"
+}
+
+task copyJAXB(type: Copy) {
+	setGroup("build")
+	setDescription("Copy JAXB libraries.")
+	from (sourceSets.main.runtimeClasspath) {
+		include '*.jar'
+	}
+	from('lib') {
+		include '*.dll'
+	}
+	into "${buildDir}/JAXB/"
 }
 
 task exewrap_x86(type: Exec, dependsOn: 'jar') {

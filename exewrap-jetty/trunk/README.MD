@@ -43,3 +43,31 @@ cdi-websocket-9.3.3.v20150827.jarを消せば問題なく動作するようで�
 2016-11-23
 jetty/lib/cdi-websocket が存在しても問題なくなったみたい？
 
+2020-05-15
+Java 11でJAXBを使うには…
+
+JAXBに必要なライブラリを取得します。
+以下のbuild.gradleを設定してcopyJAXBタスクを実行すると build/JAXB 以下に必要なライブラリが出力されます。
+これを jetty 配布フォルダーの lib/ext/jaxb などにまるごとコピーしておけばJAXBが使えるようになります。
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "javax.xml.bind:jaxb-api:2.3.1"
+	implementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+}
+
+task copyJAXB(type: Copy) {
+	setGroup("build")
+	setDescription("Copy JAXB libraries.")
+	from (sourceSets.main.runtimeClasspath) {
+		include '*.jar'
+	}
+	from('lib') {
+		include '*.dll'
+	}
+	into "${buildDir}/JAXB/"
+}
+
