@@ -45,7 +45,7 @@ task copyJAXB(type: Copy) {
 	from('lib') {
 		include '*.dll'
 	}
-	into "${buildDir}/JAXB/"
+	into "${buildDir}/ext/jaxb/"
 }
 
 task exewrap_x86(type: Exec, dependsOn: 'jar') {
