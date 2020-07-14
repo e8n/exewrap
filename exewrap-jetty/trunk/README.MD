@@ -13,8 +13,8 @@ METAINF-INF を src/main/resources にコピー
 
 jetty-9.4.11ではjetty-startだけでなくjetty-utilも必要になりました。
 jetty-startが依存しているjetty-util内の
-org.eclipse.jetty.util.JavaVersion.java
-org.eclipse.jetty.util.TopologicalSort.java
+JavaVersion.java
+TopologicalSort.java
 の2つが必要です。
 
 src/main/java/exewrap/jetty/Main.java のコメントを読んで org にコピーしたソースを修正します。

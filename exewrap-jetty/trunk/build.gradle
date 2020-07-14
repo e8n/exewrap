@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 archivesBaseName = 'jetty'
-version = '9.4.28'
+version = '9.4.30'
 
 tasks.withType(JavaCompile) {
 	sourceCompatibility = 1.8
@@ -19,14 +19,14 @@ repositories {
 
 dependencies {
 	implementation "javax.xml.bind:jaxb-api:2.3.1"
-	implementation "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+	implementation "org.glassfish.jaxb:jaxb-runtime:2.3.3"
 }
 
 def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
 tasks.withType(GroovyCompile).each { it.groovyOptions.encoding = defaultEncoding }
 
-defaultTasks 'clean', 'exewrap_x86', 'exewrap_x64'
+defaultTasks 'clean', 'exewrap_x86', 'exewrap_x64', 'copyJAXB'
 
 jar {
 	manifest {
@@ -57,7 +57,7 @@ task exewrap_x86(type: Exec, dependsOn: 'jar') {
 		"-t", "1.8",
 		"-L", ";",
 		"-b", "-agentlib:jdwp=transport=dt_socket,address=localhost:8000,server=y,suspend=n,quiet=y",
-		"-e", "NOLOG;NOHELP",
+		"-e", "IGNORE_UNCAUGHT_EXCEPTION;NOLOG;NOHELP",
 		"-j", "${jar.archiveFile.get()}",
 		"-o", "${buildDir}/x86/${archivesBaseName}.exe",
 		"-i", "src/main/resources/images/jetty.ico",
