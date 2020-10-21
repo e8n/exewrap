@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 archivesBaseName = 'jetty'
-version = '9.4.30'
+version = '9.4.32'
 
 tasks.withType(JavaCompile) {
 	sourceCompatibility = 1.8

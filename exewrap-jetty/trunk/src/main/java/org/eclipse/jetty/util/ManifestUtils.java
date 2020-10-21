@@ -64,7 +64,6 @@ public class ManifestUtils
      * @param klass the class of the jar/module to retrieve the version
      * @return the jar/module version, or an empty Optional
      */
-    @SuppressWarnings("unchecked")
     public static Optional<String> getVersion(Class<?> klass)
     {
         Optional<String> version = getManifest(klass).map(Manifest::getMainAttributes)
